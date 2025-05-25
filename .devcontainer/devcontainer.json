@@ -1,0 +1,19 @@
+{
+    "name": "Mongo DB",
+    "image": "mongoc:devel",
+    "remoteUser": "vscode",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-vscode.cpptools-extension-pack",
+                "charliermarsh.ruff",
+                "xaver.clang-format",
+                "ms-python.debugpy"
+            ]
+        }
+    }
+}
