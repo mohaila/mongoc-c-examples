@@ -182,7 +182,7 @@ int main(int argc, const char** argv) {
       command = Command::Find;
     }
   } else {
-    cerr << "mongo2-insert ping|drop|insert|index" << endl;
+    cerr << "mongo3-find ping|drop|insert|index|find" << endl;
   }
 
   mongoc_init();
@@ -200,7 +200,7 @@ int main(int argc, const char** argv) {
     case Command::Ping:
       commandPing(client, "store");
       break;
-      break;
+
     case Command::Insert:
       database = getDatabase(client, "store");
       categories = getCollection(database, "categories");
@@ -209,21 +209,25 @@ int main(int argc, const char** argv) {
       createCategories(categories);
       createProducts(products);
       break;
+
     case Command::Drop:
       database = getDatabase(client, "store");
       dropDatabase(database);
       break;
+
     case Command::Index:
       database = getDatabase(client, "store");
       products = getCollection(database, "products");
       createIndex(products);
       break;
+
     case Command::Find:
       database = getDatabase(client, "store");
       products = getCollection(database, "products");
       findProductsByCategory(products, 5);
       findProductsByPrice(products, 1200.0);
       break;
+
     default:
       break;
   }
