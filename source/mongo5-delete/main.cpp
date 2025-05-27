@@ -184,6 +184,23 @@ void updatePrices(mongoc_collection_t* collection) {
   bson_destroy(query);
 }
 
+void deleteProducts(mongoc_collection_t* collection) {
+  bson_error_t error;
+  bson_t reply;
+  auto query = BCON_NEW("price", "{", "$lte", BCON_DOUBLE(1400.00), "}");
+
+  if (!mongoc_collection_delete_many(collection, query, nullptr, &reply, &error)) {
+    cerr << "Delete products error: " << error.message << endl;
+  } else {
+    auto response = bson_as_json(&reply, nullptr);
+    cout << "MongoDB ping response: " << response << endl;
+    bson_free(response);
+  }
+
+  bson_destroy(query);
+  bson_destroy(&reply);
+}
+
 enum class Command {
   None,
   Ping,
@@ -192,6 +209,7 @@ enum class Command {
   Index,
   Find,
   Update,
+  Delete,
 };
 
 int main(int argc, const char** argv) {
@@ -212,9 +230,11 @@ int main(int argc, const char** argv) {
       command = Command::Find;
     } else if (strcmp(argv[1], "update") == 0) {
       command = Command::Update;
+    } else if (strcmp(argv[1], "delete") == 0) {
+      command = Command::Delete;
     }
   } else {
-    cerr << "mongo4-update ping|drop|insert|index|find|update" << endl;
+    cerr << "mongo5-delete ping|drop|insert|index|find|update|delete" << endl;
   }
 
   mongoc_init();
@@ -266,6 +286,11 @@ int main(int argc, const char** argv) {
       updatePrices(products);
       break;
 
+    case Command::Delete:
+      database = getDatabase(client, "store");
+      products = getCollection(database, "products");
+      deleteProducts(products);
+      break;
     default:
       break;
   }
