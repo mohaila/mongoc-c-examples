@@ -111,12 +111,58 @@ void dropDatabase(mongoc_database_t* database) {
   }
 }
 
-enum class Command {
-  None,
-  Ping,
-  Drop,
-  Insert,
-};
+void createIndex(mongoc_collection_t* products) {
+  auto keys1 = BCON_NEW("price", BCON_INT32(1));
+  auto models1 = mongoc_index_model_new(keys1, nullptr);
+
+  auto keys2 = BCON_NEW("category_id", BCON_INT32(1));
+  auto models2 = mongoc_index_model_new(keys2, nullptr);
+
+  mongoc_index_model_t* models[] = {models1, models2};
+
+  bson_error_t error;
+  if (!mongoc_collection_create_indexes_with_opts(products, models, 2, nullptr, nullptr,
+                                                  &error)) {
+    cerr << "Failed to create products proce index. "
+         << "Error message: " << error.message << endl;
+  }
+  mongoc_index_model_destroy(models2);
+  mongoc_index_model_destroy(models1);
+  bson_destroy(keys2);
+  bson_destroy(keys1);
+}
+
+void findProductsByCategory(mongoc_collection_t* collection, int id) {
+  bson_error_t error;
+  auto query = BCON_NEW("category_id", BCON_INT32(id));
+
+  auto count = mongoc_collection_count_documents(collection, query, nullptr, nullptr,
+                                                 nullptr, &error);
+  if (count == -1) {
+    cerr << "Find products by category error: " << error.message << endl;
+  } else {
+    cout << "Found products in category " << id << ": " << count << endl;
+  }
+
+  bson_destroy(query);
+}
+
+void findProductsByPrice(mongoc_collection_t* collection, double price) {
+  bson_error_t error;
+  auto query = BCON_NEW("price", "{", "$lte", BCON_DOUBLE(price), "}");
+
+  auto count = mongoc_collection_count_documents(collection, query, nullptr, nullptr,
+                                                 nullptr, &error);
+  if (count == -1) {
+    cerr << "Find products by price error: " << error.message << endl;
+  } else {
+    cout << "Found products price <= " << price << ": " << count << endl;
+  }
+
+  bson_destroy(query);
+}
+
+enum class Command { None, Ping, Drop, Insert, Index, Find };
 
 int main(int argc, const char** argv) {
   auto url{"mongodb://host.docker.internal:27017"};
@@ -130,9 +176,13 @@ int main(int argc, const char** argv) {
       command = Command::Insert;
     } else if (strcmp(argv[1], "ping") == 0) {
       command = Command::Ping;
+    } else if (strcmp(argv[1], "index") == 0) {
+      command = Command::Index;
+    } else if (strcmp(argv[1], "find") == 0) {
+      command = Command::Find;
     }
   } else {
-    cerr << "mongo2-insert ping|drop|insert" << endl;
+    cerr << "mongo2-insert ping|drop|insert|index" << endl;
   }
 
   mongoc_init();
@@ -162,6 +212,17 @@ int main(int argc, const char** argv) {
     case Command::Drop:
       database = getDatabase(client, "store");
       dropDatabase(database);
+      break;
+    case Command::Index:
+      database = getDatabase(client, "store");
+      products = getCollection(database, "products");
+      createIndex(products);
+      break;
+    case Command::Find:
+      database = getDatabase(client, "store");
+      products = getCollection(database, "products");
+      findProductsByCategory(products, 5);
+      findProductsByPrice(products, 1200.0);
       break;
     default:
       break;

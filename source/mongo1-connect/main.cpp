@@ -33,6 +33,9 @@ void commandPing(mongoc_client_t* client, const char* name) {
 
   auto command = BCON_NEW("ping", BCON_INT32(1));
   if (!mongoc_client_command_simple(client, name, command, nullptr, &reply, &error)) {
+    bson_destroy(&reply);
+    bson_destroy(command);
+
     cerr << "Error command: " << error.message << endl;
     return;
   }

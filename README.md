@@ -21,7 +21,14 @@ cd infra
 docker compose up -d
 ```
 ## Examples
-### mongo1-onnect
+### mongo1-connect
 Create a MongoDB client, send a ping command and print response or error message
 ### mongo2-insert
-Create two collections and add some documents by using insert one or many
+has 3 commands:
+- ping: Ping MongoDB Server and print json response or error message
+- drop : drop database
+- insert: Create two collections and add some documents by using insert one or many
+### mongo3-find
+has 2 more commands:
+- index: creates indexes on products collection
+- find: find products by category and by price
