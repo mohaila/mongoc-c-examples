@@ -32,3 +32,11 @@ has 3 commands:
 has 2 more commands:
 - index: creates indexes on products collection
 - find: find products by category and by price
+### mongo4-update
+has 1 more command:
+- update to update products
+### mongo5-delete
+has 1 more command:
+- delete to delete some products
+### mongo6-pool
+usesMongoDB client pool instead of client and sends a ping command.
